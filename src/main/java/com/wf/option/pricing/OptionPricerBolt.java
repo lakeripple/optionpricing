@@ -28,30 +28,42 @@ import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.Calendar;
 import org.jquantlib.time.Date;
 import org.jquantlib.time.calendars.Target;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
 public class OptionPricerBolt extends BaseBasicBolt {
-
+	private static Logger logger = LoggerFactory.getLogger("OptionPricerBolt");
+	JsonObject data;
+	Double underlyingTickPrice;
+	String optionName;
 	public void execute(Tuple tuple, BasicOutputCollector collector) {
+		logger.info("--------------------------------------------------"+System.nanoTime());
 		List<Object> values = tuple.getValues();
-		JsonObject data = (JsonObject) values.get(0);
-		double optionPrice = price(data);
+		data = (JsonObject) values.get(0);
+		underlyingTickPrice = (Double) values.get(1);
+		logger.info("Inside execute method of OptionPricerBolt : underlyingPrice :"+underlyingTickPrice);
+		double optionPrice = price(data, underlyingTickPrice);
+		logger.info("Final price calculated for option :"+data.get("optionName").getAsString()+" is :"+optionPrice);
+		logger.info("------------------------End--------------------------"+System.nanoTime());
 	}
 
-	private double price(JsonObject data) {
+	private double price(JsonObject data, Double underlyingPrice) {
 		final Option.Type type = Option.Type.Call;
-
-	       final double underlying = 197.0;
+			optionName = data.get("optionName").getAsString();
+	       final double underlying = underlyingPrice;
 	       /*@Rate*/final double riskFreeRate = 0.0256;
-	       final double volatility = data.get("impliedVol").getAsDouble()();
+	       double impVol = new Double(data.get("volatility").getAsString());
+	       if(impVol == 0.0) impVol = 1;
+	       final double volatility = impVol;
 	       final double dividendYield = 0.00;
 	       // set up dates
 	       final Calendar calendar = new Target();
 	       final Date todaysDate = new Date(new java.util.Date());
 	       new Settings().setEvaluationDate(todaysDate);
-	       
-	       Long lDate = data.get("expiryDate").getAsLong();
+	       String strDate = data.get("expiryDate").getAsString();
+	       Long lDate = new Long(strDate);
 	       final Date expiryDate = new Date(new java.util.Date(lDate));
 	       final DayCounter dayCounter = new Actual365Fixed();
 	       final Exercise europeanExercise = new EuropeanExercise(expiryDate);
@@ -72,7 +84,7 @@ public class OptionPricerBolt extends BaseBasicBolt {
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("optionPrice"))		;
+		declarer.declare(new Fields("optionName","optionPrice"))		;
 	}
 
 }

@@ -17,7 +17,8 @@ import com.google.gson.JsonObject;
 public class OptionDataReaderBolt extends BaseBasicBolt{
 	
 	private Integer emitFrequency;
-	
+	JsonObject jsonObj;
+	Double underlyingTickPrice;
 	public OptionDataReaderBolt(){
 		emitFrequency = 5;
 	}
@@ -32,18 +33,16 @@ public class OptionDataReaderBolt extends BaseBasicBolt{
 		conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, emitFrequency);
 		return conf;
 	}
-	public void execute(Tuple tuple, BasicOutputCollector collector) {
-		if(tuple.getSourceComponent().equals(Constants.SYSTEM_COMPONENT_ID)
-			&& tuple.getSourceStreamId().equals(Constants.METRICS_TICK_STREAM_ID)){
-			List<Object> data = tuple.getValues();
-			JsonObject jsonObj = (JsonObject) data.get(0);
-			collector.emit(new Values(jsonObj));
-		}
+	public void execute(Tuple tuple, BasicOutputCollector collector) {		
+		List<Object> data = tuple.getValues();
+		jsonObj = (JsonObject) data.get(tuple.fieldIndex("optiondata"));
+		underlyingTickPrice = (Double) data.get(tuple.fieldIndex("underlyingPrice"));
+		collector.emit(new Values(jsonObj,underlyingTickPrice));
 		
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("jsonotpiondata"));
+		declarer.declare(new Fields("jsonotpiondata","underlyingPrice"));
 	}
 
 }

@@ -23,8 +23,9 @@ import com.google.gson.JsonParser;
 
 public class OptionDataSpout extends BaseRichSpout{	
 	SpoutOutputCollector _collector;
-
+	Double underlyingTickPrice;
 	public void nextTuple() {
+		underlyingTickPrice = 202.0;
 		URL url = null;
 		HttpURLConnection conn = null;
 		String inline = "";
@@ -48,7 +49,7 @@ public class OptionDataSpout extends BaseRichSpout{
 			JsonArray jarray = (JsonArray)obj;
 			for(int i=0; i < jarray.size(); i++){
 				jObj = jarray.get(i).getAsJsonObject();
-				_collector.emit(new Values(jObj));
+				_collector.emit(new Values(jObj,underlyingTickPrice));
 			}
 		}catch(MalformedURLException e){
 			e.printStackTrace();
@@ -63,7 +64,7 @@ public class OptionDataSpout extends BaseRichSpout{
 	}
 
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("optiondata"));
+		declarer.declare(new Fields("optiondata","underlyingPrice"));
 	}
 
 }

@@ -13,7 +13,7 @@ public class OptionPricingTopology {
 			builder.setBolt("optiondata", new OptionDataReaderBolt(),8).shuffleGrouping("spout");
 			builder.setBolt("pricer", new OptionPricerBolt(),12).shuffleGrouping("optiondata");
 			Config conf = new Config();
-			conf.setDebug(true);
+			conf.setDebug(false);
 			
 			if(args != null && args.length > 0){
 				conf.setMaxTaskParallelism(1);

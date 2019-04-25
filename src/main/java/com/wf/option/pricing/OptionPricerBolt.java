@@ -19,6 +19,7 @@ import org.jquantlib.instruments.Option;
 import org.jquantlib.instruments.Payoff;
 import org.jquantlib.instruments.PlainVanillaPayoff;
 import org.jquantlib.instruments.VanillaOption;
+import org.jquantlib.pricingengines.AnalyticEuropeanEngine;
 import org.jquantlib.processes.BlackScholesMertonProcess;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
@@ -103,6 +104,8 @@ public class OptionPricerBolt extends BaseBasicBolt {
 		// European Options
 		final VanillaOption europeanOption = new EuropeanOption(payoff,
 				europeanExercise);
+		
+		europeanOption.setPricingEngine(new AnalyticEuropeanEngine(bsmProcess));
 		// Black-Scholes for European
 		return europeanOption.NPV();
 	}

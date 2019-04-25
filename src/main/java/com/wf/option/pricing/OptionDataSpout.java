@@ -24,12 +24,18 @@ import com.google.gson.JsonParser;
 public class OptionDataSpout extends BaseRichSpout{	
 	SpoutOutputCollector _collector;
 	Double underlyingTickPrice;
+	String refDataServiceUrl;
+	
+	public OptionDataSpout(String refDataSrvUrl){
+		this.refDataServiceUrl  = refDataSrvUrl;
+	}
 	public void nextTuple() {
 		underlyingTickPrice = 202.0;
 		URL url = null;
 		HttpURLConnection conn = null;
 		String inline = "";
-		String strURL = "http://localhost:8080/refdata/option";
+//		String strURL = "http://localhost:8080/refdata/option";
+		String strURL = refDataServiceUrl;
 		JsonObject jObj = null;
 		try{
 			url = new URL(strURL);

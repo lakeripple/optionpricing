@@ -8,14 +8,19 @@ import org.apache.storm.topology.TopologyBuilder;
 public class OptionPricingTopology {
 	
 		public static void main(String[] args) throws Exception{
+			if(args == null || args.length < 1){
+				System.out.println("Provide ref data service url as arg");
+				return;
+			}
+			String refDataSrvUrl = args[0];
 			TopologyBuilder builder = new TopologyBuilder();
-			builder.setSpout("spout", new OptionDataSpout(),5);
+			builder.setSpout("spout", new OptionDataSpout(refDataSrvUrl),5);
 			builder.setBolt("optiondata", new OptionDataReaderBolt(),8).shuffleGrouping("spout");
 			builder.setBolt("pricer", new OptionPricerBolt(),12).shuffleGrouping("optiondata");
 			Config conf = new Config();
 			conf.setDebug(false);
 			
-			if(args != null && args.length > 0){
+			if(args != null && args.length > 1){
 				conf.setMaxTaskParallelism(1);
 			
 				LocalCluster cluster = new LocalCluster();
